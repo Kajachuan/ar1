@@ -2,15 +2,15 @@
 
 ## Péndulo Invertido
 
-### Alumno: Kevin Cajachuán (A1606)
+### Alumno: Kevin Cajachuán
 
 #### Repositorio: [https://github.com/Kajachuan/ar1](https://github.com/Kajachuan/ar1)
 
-Para resolver el desafio se eligió resolver el problema del péndulo invertido. Para resolver dicho problema se puede utilizar el entorno ya exitente de la librería MuJoCo que forma parte de Gymnasium (InvertedPendulum-v5). Se puede observar un ejemplo de visualización de dicho problema en la siguiente figura.
+Para resolver el desafío se eligió resolver el problema del péndulo invertido. Para resolver dicho problema se puede utilizar el entorno ya existente de la librería MuJoCo que forma parte de Gymnasium (InvertedPendulum-v5). Se puede observar un ejemplo de visualización de dicho problema en la siguiente figura.
 
 <center><img src="img/pendulo.png" alt="pendulo" width="200"/></center>
 
-Tal como lo dice la [documentación](https://gymnasium.farama.org/environments/mujoco/inverted_pendulum/), es el mismo problema del [CartPole](https://gymnasium.farama.org/environments/classic_control/cart_pole/) pero adaptado al entorno de MuJoCo. Una de las consecuencias de esto es que el espacio de acciones para este problema pasa a ser continuo con -3 como valor mínimo y 3 como valor máximo que representa la fuerza que se le aplica al carro y en qué dirección. Además, al igual que en CartPole, el espacio de observaciones está compuesto por 4 valores continuos (posición, ángulo, velocidad y velocidad angular) cuyos valores pueden ser cuálquier número real. Además, la recompensa es de 1 por cada paso en el que el péndulo se mantiene equilibrado.
+Tal como lo dice la [documentación](https://gymnasium.farama.org/environments/mujoco/inverted_pendulum/), es el mismo problema del [CartPole](https://gymnasium.farama.org/environments/classic_control/cart_pole/) pero adaptado al entorno de MuJoCo. Una de las consecuencias de esto es que el espacio de acciones para este problema pasa a ser continuo con -3 como valor mínimo y 3 como valor máximo que representa la fuerza que se le aplica al carro y en qué dirección. Además, al igual que en CartPole, el espacio de observaciones está compuesto por 4 valores continuos (posición, ángulo, velocidad y velocidad angular) cuyos valores pueden ser cualquier número real. Además, la recompensa es de 1 por cada paso en el que el péndulo se mantiene equilibrado.
 
 Para este trabajo se decidió utilizar tanto Q-Learning como SARSA para resolver el problema y comparar los resultados. Para aplicar estos métodos, hay que discretizar tanto el espacio de acciones como el espacio de observaciones. Discretizar el espacio de acciones parece simple ya que consiste en dividir en bins los posibles valores de las acciones y los límites ya están predefinidos:
 
@@ -50,7 +50,9 @@ else:
     action_idx = np.argmax(q_table[state]) # Explotar
 ```
 
-Además se definieron los siguientes valores para realizar el entrenamiento:
+## Primer experimento
+
+Para el primer experimento se definieron los siguientes valores para el entrenamiento:
 
 | Variable    | Valor  |
 | ----------- | ------ |
@@ -66,15 +68,17 @@ Además se definieron los siguientes valores para realizar el entrenamiento:
 
 Estos valores producen una Tabla Q de 11x11x11x11x21, dando un total de 307461 entradas, lo que es un número razonable para utilizar Q-Learning o SARSA.
 
-## Q-Learning
+### Q-Learning
 
 La curva de recompensa por episodio utilizando Q-Learning se puede observar en la siguiente figura:
 
 <center><img src="img/qlearning.png" alt="qlearning" width="400"/></center>
 
-Como se puede observar, a medida que avanzan los episodios, se obtiene una mayor recompensa promedio, llegando a tener estabilizado el péndulo por alrededor de 175 pasos. Sin embargo, no se oberva una estabilidad en el aprendizaje.
+Como se puede observar, a medida que avanzan los episodios, se obtiene una mayor recompensa promedio, llegando a tener estabilizado el péndulo por alrededor de 175 pasos. Algo a recalcar es que no se observa una estabilidad en el aprendizaje.
 
-## SARSA
+El entrenamiento en total tardó 159.84 segundos.
+
+### SARSA
 
 La curva de recompensa por episodio utilizando SARSA se puede observar en la siguiente figura:
 
@@ -83,3 +87,33 @@ La curva de recompensa por episodio utilizando SARSA se puede observar en la sig
 Como se puede observar, a medida que avanzan los episodios, también se obtiene una mayor recompensa promedio y se observa una curva más estable. Sin embargo, la recompensa máxima obtenida es menor que la que se obtuvo con Q-Learning.
 
 Los notebooks provistos en el repositorio generan videos a la mitad del entrenamiento y en el último episodio del entrenamiento. Hay videos de ejemplo subidos en el repositorio donde se puede observar como con Q-Learning se puede mantener el péndulo equilibrado por mas tiempo (6s). En el caso de SARSA ambos videos tienen la misma duración, lo que coincide con el gráfico.
+
+En este caso el entrenamiento tardó 81.01 segundos, lo que significa que fue casi dos veces más rápido que Q-Learning.
+
+## Segundo experimento
+
+El segundo experimento consistió en aumentar la cantidad de acciones para observar si se llega a alcanzar una recompensa mayor. En este caso se probó con 61 acciones. Con esto se tiene una tabla Q de 11x11x11x11x61 = 893101 entradas. 
+
+### Q-Learning
+
+Como se puede observar en la siguiente figura, el rendimiento se ve afectado significativamente ya que a pesar de que la curva incrementa a lo largo de los episodios, no llega a los valores máximos que se obtuvieron en el primer experimento. Esto puede deberse a que al haber más entradas en la tabla Q, utilizar este algoritmo deja de tener sentido y se hace necesario utilizar métodos más avanzados como DQN.
+
+<center><img src="img/qlearning2.png" alt="qlearning2" width="400"/></center>
+
+### SARSA
+
+En el caso de SARSA el rendimiento también disminuye un poco comparado con el primer experimento, pero en porcentaje no es una reducción significativa como en el caso de Q-Learning.
+
+<center><img src="img/sarsa2.png" alt="sarsa2" width="400"/></center>
+
+## Otros experimentos
+
+Se realizaron distintos experimentos cambiando otros parámetros, pero no hubo ningún cambio significativo y en otros incluso el rendimiento disminuyó significativamente, especialmente cuando se aumenta demasiado el tamaño de la tabla Q.
+
+## Conclusiones
+
+Los experimentos demostraron que ambos métodos pueden lograr un control básico del péndulo, pero con diferencias significativas en rendimiento y eficiencia. Q-Learning alcanzó recompensas más altas (≈175 pasos equilibrados) pero con inestabilidad en el aprendizaje y mayor tiempo de entrenamiento (159.84 segundos), mientras que SARSA mostró una curva de aprendizaje más estable y un entrenamiento más rápido (81.01 segundos), aunque con menores recompensas máximas.
+
+La discretización resultó crítica ya que aumentar las acciones de 21 a 61 degradó notablemente el rendimiento de Q-Learning, evidenciando las limitaciones de tablas Q grandes en espacios de alta dimensionalidad.
+
+En conclusión, mientras Q-Learning prioriza la maximización de recompensas a costa de estabilidad y escalabilidad, SARSA ofrece un equilibrio entre eficiencia y consistencia. Sin embargo, ambos métodos enfrentan desafíos en entornos de alta dimensionalidad, resaltando la necesidad de explorar enfoques basados en redes neuronales para manejar espacios continuos sin discretización.
